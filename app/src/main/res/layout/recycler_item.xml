@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              style="@style/AppTheme"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:padding="10dp">
+
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/cardView"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="170dp"
+        card_view:cardCornerRadius="5dp"
+        card_view:contentPadding="10dp"
+        card_view:cardElevation="5dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/ivCoverSmall"
+                android:layout_height="150dp"
+                android:layout_width="150dp"/>
+
+            <RelativeLayout
+                android:id="@+id/rlSingerInfo"
+                android:layout_toRightOf="@+id/ivCoverSmall"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignBottom="@+id/ivCoverSmall"
+                android:layout_marginLeft="20dp"
+                android:padding="10dp">
+                <TextView
+                    android:id="@+id/tvSingerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:text="Tove Lo"
+                    style="@style/TextStyleBold"/>
+                <TextView
+                    android:id="@+id/tvSingerGenres"
+                    android:layout_below="@+id/tvSingerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="pop, dance, electronics"/>
+
+                <TextView
+                    android:id="@+id/tvSingerAlbumsTracks"
+                    android:layout_below="@+id/tvSingerGenres"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:gravity="bottom"
+                    android:text="22 albums, 81 tracks"/>
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>
