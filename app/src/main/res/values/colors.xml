@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#607d8b</color>
-    <color name="colorPrimaryDark">#455a64</color>
-    <color name="colorAccent">#ffab40</color>
+    <color name="colorPrimary">#3f51b5</color>
+    <color name="colorPrimaryDark">#303f9f</color>
+    <color name="colorAccent">#ff4081</color>
 
     <color name="colorTextGray">#80ffffff</color>
-    <color name="background_material_light">#dce6eb</color>
+    <color name="background_material_light">#ffffff</color>
+    <color name="card_default_background">#c5cae9</color>
+    <color name="card_selected_background">#7986cb</color>
     <color name="primary_text_default_material_light">#e6000000</color>
     <color name="primary_text_default_material_light_my">#f0000000</color>
     <color name="secondary_text_default_material_light_my">#8a000000</color>

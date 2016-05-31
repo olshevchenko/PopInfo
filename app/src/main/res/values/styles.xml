@@ -9,10 +9,26 @@
         <item name="android:colorBackground">@color/background_material_light</item>
         <item name="android:textColorPrimary">@color/primary_text_material_light</item>
         <item name="android:textColorSecondary">@color/secondary_text_material_light_my</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="TextStyleBold" parent="@android:style/TextAppearance.Medium">
+    <style name="TextStyleName" parent="@android:style/TextAppearance.Medium">
         <item name="android:textStyle">bold</item>
     </style>
+
+    <style name="TextStyleOthers" parent="@android:style/TextAppearance.Small">
+    </style>
+
+    <style name="CustomRatingBar" parent="@android:style/Widget.RatingBar">
+        <item name="colorControlNormal">@color/colorPrimary</item>
+        <item name="colorControlActivated">@color/colorAccent</item>
+        <item name="android:progressDrawable">@drawable/custom_ratingbar</item>
+        <item name="android:minWidth">24dip</item>
+        <item name="android:maxWidth">24dip</item>
+        <item name="android:minHeight">24dip</item>
+        <item name="android:maxHeight">24dip</item>
+    </style>
+
 
 </resources>

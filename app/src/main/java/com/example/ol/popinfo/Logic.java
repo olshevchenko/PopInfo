@@ -1,6 +1,8 @@
 package com.example.ol.popinfo;
 
 
+import android.view.View;
+
 import com.example.ol.popinfo.Singers.Singer;
 
 import java.util.List;
@@ -24,6 +26,20 @@ public class Logic {
     void singersRequestInfo();
   }
 
+  /**
+   * interface to process events on separated singer item
+   */
+  public interface OnSingerItemClickListener {
+    void onClick(int position, View view); /// for starting detail view
+    boolean onLongClick(int position, View view); /// for (multiple) selection
+  }
+
+  /**
+   * interface to process events on separated singer item
+   */
+  public interface OnSingerDetailEventListener {
+    void onRatingBarChange(Singer singer, int value);
+  }
 }
 
 

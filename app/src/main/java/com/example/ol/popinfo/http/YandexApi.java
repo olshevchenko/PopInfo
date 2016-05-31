@@ -36,10 +36,10 @@ public class YandexApi {
 
   private static Retrofit providesRetrofitClient(String baseUrl) {
     /// 4 Retrofit 2.x requests logging
-    HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-    logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+//    HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+//    logging.setLevel(HttpLoggingInterceptor.Level.BASIC);
     OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-    httpClient.addInterceptor(logging);
+//    httpClient.addInterceptor(logging);
 
     Retrofit client = new Retrofit.Builder()
         .baseUrl(baseUrl)

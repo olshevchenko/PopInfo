@@ -63,10 +63,10 @@ public class YandexClient implements Logic.SingersRequestInfoProcessor {
           Singer singer;
           int i = 0;
           for (SingerDto singerDto : response.body()) {
-              singer = new Singer(singerDto); /// conversion DTO => model
-              singerList.add(singer);
-              if (++i >= 20)
-                break;
+            singer = new Singer(singerDto); /// conversion DTO => model
+            ///ToDo Remove it!
+//            singer.getHeader().getData().setRating(i++ % 5);
+            singerList.add(singer);
           }
           Log.d(LOG_TAG, "Got new [" + singerList.size() + "] singers");
 

@@ -63,7 +63,7 @@ public class ImagesHelper {
     if (bitmap != null) {
       imageView.setImageBitmap(bitmap);
     } else {
-      imageView.setImageResource(R.drawable.ic_photo_white_36dp);
+      imageView.setImageResource(R.drawable.ic_photo_white_48dp);
       BitmapWorkerTask task = new BitmapWorkerTask(imageKey, imageView);
       task.execute(imageUrl, imageKey);
     }
@@ -85,7 +85,7 @@ public class ImagesHelper {
       String url = urls[0];
       Bitmap bitmap = null;
       try {
-        Log.d(LOG_TAG, "Going open + decode Stream for url: " + url);
+//        Log.d(LOG_TAG, "Going open + decode Stream for url: " + url);
         InputStream in = new java.net.URL(url).openStream();
         bitmap = BitmapFactory.decodeStream(in);
       } catch (Exception e) {
@@ -97,7 +97,7 @@ public class ImagesHelper {
 
     @Override
     protected void onPostExecute(Bitmap result) {
-      Log.d(LOG_TAG, "Going set image '" + result + "' and store to cache with key: " + mImageKey);
+//      Log.d(LOG_TAG, "Going set image '" + result + "' and store to cache with key: " + mImageKey);
       mImageView.setImageBitmap(result);
       addBitmapToMemoryCache(mImageKey, result);
     }

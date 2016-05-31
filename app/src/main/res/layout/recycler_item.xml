@@ -3,64 +3,101 @@
               style="@style/AppTheme"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:padding="10dp">
+              android:layout_height="match_parent">
 
     <android.support.v7.widget.CardView
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:id="@+id/cardView"
         android:layout_gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="170dp"
-        card_view:cardCornerRadius="5dp"
-        card_view:contentPadding="10dp"
-        card_view:cardElevation="5dp">
+        android:layout_height="180dp"
+        card_view:contentPaddingLeft="10dp"
+        card_view:contentPaddingBottom="15dp"
+        card_view:cardCornerRadius="6dp"
+        card_view:cardElevation="6dp"
+        card_view:cardUseCompatPadding="true">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
             <ImageView
                 android:id="@+id/ivCoverSmall"
                 android:layout_height="150dp"
-                android:layout_width="150dp"/>
+                android:layout_width="150dp"
+                android:layout_marginTop="15dp"/>
 
-            <RelativeLayout
-                android:id="@+id/rlSingerInfo"
+            <FrameLayout
                 android:layout_toRightOf="@+id/ivCoverSmall"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_alignBottom="@+id/ivCoverSmall"
-                android:layout_marginLeft="20dp"
-                android:padding="10dp">
-                <TextView
-                    android:id="@+id/tvSingerName"
+                android:layout_height="match_parent">
+                <RelativeLayout
+                    android:id="@+id/rlSingerInfo"
+                    android:layout_toRightOf="@+id/ivCoverSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignBottom="@+id/ivCoverSmall"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginRight="10dp">
+                    <TextView
+                        android:id="@+id/tvSingerName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentLeft="true"
+                        android:text="Tove Lo"
+                        style="@style/TextStyleName"/>
+                    <TextView
+                        android:id="@+id/tvSingerGenres"
+                        android:layout_below="@id/tvSingerName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="pop, dance, electronics"
+                        style="@style/TextStyleOthers"/>
+                    <TextView
+                        android:id="@+id/tvSingerAlbumsTracks"
+                        android:layout_below="@id/tvSingerGenres"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="22 albums, 81 tracks"
+                        style="@style/TextStyleOthers"/>
+
+                    <RelativeLayout
+                        android:layout_below="@id/tvSingerAlbumsTracks"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="16dp"
+                        android:gravity="bottom"
+                        android:layout_alignParentBottom="true">
+                        <RatingBar
+                            android:id="@+id/rbSingerRating"
+                            style="@style/CustomRatingBar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:scaleX="0.7"
+                            android:scaleY="0.7"
+                            android:transformPivotX="0dp"
+                            android:transformPivotY="0dp"
+                            android:rating="0"
+                            android:stepSize="1"
+                            android:numStars="@integer/rating_stars_num"
+                            android:layout_alignParentBottom="true"/>
+                    </RelativeLayout>
+
+                </RelativeLayout>
+
+                <ImageView
+                    android:id="@+id/ivSelector"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:text="Tove Lo"
-                    style="@style/TextStyleBold"/>
-                <TextView
-                    android:id="@+id/tvSingerGenres"
-                    android:layout_below="@+id/tvSingerName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="pop, dance, electronics"/>
-
-                <TextView
-                    android:id="@+id/tvSingerAlbumsTracks"
-                    android:layout_below="@+id/tvSingerGenres"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:gravity="bottom"
-                    android:text="22 albums, 81 tracks"/>
-
-            </RelativeLayout>
-
+                    android:layout_gravity="top|right"
+                    android:src="@drawable/ic_check_circle_white_36dp"
+                    android:visibility="gone">
+                </ImageView>
+            </FrameLayout>
         </RelativeLayout>
-
 
     </android.support.v7.widget.CardView>
 

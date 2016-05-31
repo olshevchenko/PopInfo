@@ -1,0 +1,40 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context=".MainActivity">
+    <item
+        android:id="@+id/action_reload"
+        android:orderInCategory="1"
+        android:icon="@drawable/ic_refresh_white_36dp"
+        android:title="@string/action_reload"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_search"
+        android:orderInCategory="2"
+        android:icon="@drawable/ic_search_white_36dp"
+        android:title="@string/action_search"
+        app:showAsAction="always"/>
+    <item
+        android:orderInCategory="3"
+        android:icon="@drawable/ic_sort_white_36dp"
+        android:title="@string/action_sort"
+        app:showAsAction="always">
+        <menu>
+        <group android:id="@+id/group_sort"
+               android:checkableBehavior="single">
+            <item android:id="@+id/action_sort_by_none"
+                  android:title="@string/action_sort_by_none"/>
+            <item android:id="@+id/action_sort_by_name"
+                  android:title="@string/action_sort_by_name"/>
+            <item android:id="@+id/action_sort_by_genres"
+                  android:title="@string/action_sort_by_genres"/>
+        </group>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/action_about"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_info_white_36dp"
+        android:title="@string/action_about"
+        app:showAsAction="never"/>
+</menu>
