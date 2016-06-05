@@ -30,10 +30,12 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
   private final Context mContext;
   private static ImagesHelper mImagesHelper;
   private static Logic.OnSingerItemClickListener mClickListener;
-  private List<Singer> mSingers;
+
+  private List<Singer> mSingers; /// current list
+  private static SparseBooleanArray mSelectedItems = new SparseBooleanArray();
+
   private static String sAlbumsStr;
   private static String sTracksStr;
-  private static SparseBooleanArray mSelectedItems = new SparseBooleanArray();
   private static int sCardDefColor;
   private static int sCardSelectColor;
 
@@ -69,6 +71,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
     public void bind(final Singer singerItem, boolean isSelected) {
       /// 1'st, highlight the item accordingly
       mCV.setCardBackgroundColor(isSelected? sCardSelectColor : sCardDefColor);
+//      mCV.setMaxCardElevation(isSelected? 0.0f : 6.0f);
       mSelector.setVisibility(isSelected? View.VISIBLE : View.GONE);
 
       /// then, draw the item's content
@@ -139,6 +142,24 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
   return mSingers.size();
   }
 
+
+  /**
+   * Just notifies.
+   *
+   * @param pos The index of the item to remove.
+   */
+  public void removeItem(int pos) {
+    notifyItemRemoved(pos);
+  }
+
+  /**
+   * Just notifies.
+   *
+   * @param pos The index of the item to add.
+   */
+  public void addItem(int pos) {
+    notifyItemRangeInserted(pos, 1);
+  }
 /**
  * multiple selection operations
  */

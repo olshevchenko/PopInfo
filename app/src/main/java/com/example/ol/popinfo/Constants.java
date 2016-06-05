@@ -29,7 +29,8 @@ public final class Constants {
   public class Singers {
     public static final short DEFLT_RATING = 0; /// initial singer's rating
     public static final short NUMBER_OF = 100; /// initial number of singers
-    public static final short NUMBER_OF_FAV = 33; /// initial number of favorit singers
+    public static final short NUMBER_OF_FAV = 33; /// initial number of favorite singers
+    public static final short NUMBER_OF_DEL = 3; /// initial number of deleting singers
     public static final short GENRES_STR_LEN = 96; /// initial size of 'genres' list size in String
     public static final short ALBUMS_TRACKS_STR_LEN = 64; /// initial size of 'albums, tracks' line
   }

@@ -68,32 +68,71 @@ public class SingersHelper {
     return singerList.get(number);
   }
 
+
+  /**
+   * removes ONE singer item from both (common & favorite if one has rating rank) lists
+   */
+  public void removeSinger(int number) throws IndexOutOfBoundsException {
+    Singer singer = singerList.get(number);
+    for (Singer fav:favList) {
+      if (fav.equals(singer)) {
+        favList.remove(fav);
+        break;
+      }
+    }
+    singerList.remove(number);
+  }
+
+
+  /**
+   * Adds the singer to the common list at the exact position
+   * copy it to the favorite list, if necessary
+   */
+  public void addSinger(Singer newSinger, int pos) {
+    singerList.add(pos, newSinger);
+    changeFavorite(newSinger, newSinger.getHeader().getData().getRating());
+  }
+
+
+  /**
+   * removes LIST OF singers items from both (common & favorite if one has rating rank) lists
+
+   * erges common list with favorite one:
+   * 1) transmits rating from favorites into the same records in the common list
+   * 2) adds all remained favorite records into the common list that aren't there yet
+   */
+  public void removeSingers(List<Singer> delList) {
+    singerList.removeAll(delList);
+    favList.removeAll(delList); /// as well as from common
+  }
+
+
   /**
    * sorts by <sortingState> saved field
    */
-  public void Sort() {
+  public void sort() {
     switch (sortingState) {
       case BY_NAME:
-        SortByName();
+        sortByName();
         break;
       case BY_GENRES:
-        SortByGenres();
+        sortByGenres();
         break;
       case NOT:
       default:
-        SortById();
+        sortById();
     }
   }
 
-  public void SortById() {
+  public void sortById() {
     Collections.sort(singerList, Singer.SORTED_BY_ID);
   }
 
-  public void SortByName() {
+  public void sortByName() {
     Collections.sort(singerList, Singer.SORTED_BY_NAME);
   }
 
-  public void SortByGenres() {
+  public void sortByGenres() {
     Collections.sort(singerList, Singer.SORTED_BY_GENRES);
   }
 
