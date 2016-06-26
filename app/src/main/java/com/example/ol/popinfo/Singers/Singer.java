@@ -298,7 +298,7 @@ public class Singer {
       int id1 = obj1.getHeader().getData().getId();
       int id2 = obj2.getHeader().getData().getId();
 
-      return id2 - id1;
+      return id1 - id2;
     }
   };
 

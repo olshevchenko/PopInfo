@@ -1,7 +1,6 @@
 package com.example.ol.popinfo;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -9,11 +8,11 @@ import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.example.ol.popinfo.Images.ImagesHelper;
 import com.example.ol.popinfo.Singers.Singer;
 
 import java.util.ArrayList;
@@ -29,10 +28,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
 
   private final Context mContext;
   private static ImagesHelper mImagesHelper;
-  private static Logic.OnSingerItemClickListener mClickListener;
+  private static Interfaces.OnSingerItemClickListener mClickListener;
 
   private List<Singer> mSingers; /// current list
-  private static SparseBooleanArray mSelectedItems = new SparseBooleanArray();
+  private SparseBooleanArray mSelectedItems = new SparseBooleanArray();
 
   private static String sAlbumsStr;
   private static String sTracksStr;
@@ -104,11 +103,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
 
   }
 
-  // Provide a suitable constructor (depends on the kind of dataset)
   public RecyclerAdapter(Context context,
                          ImagesHelper imagesHelper,
                          List<Singer> singers,
-                         Logic.OnSingerItemClickListener listener) {
+                         Interfaces.OnSingerItemClickListener listener) {
 
     mContext = context;
     mImagesHelper = imagesHelper;
@@ -121,6 +119,19 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
 
     sCardDefColor= mContext.getResources().getColor(R.color.card_default_background);
     sCardSelectColor = mContext.getResources().getColor(R.color.card_selected_background);
+  }
+
+  /**
+   * resets the data with the new one (e.g. to show search results)
+    */
+  public void resetList(List<Singer> newSingers) {
+    mSingers = newSingers;
+    notifyDataSetChanged();
+  }
+
+
+  public List<Singer> getList() {
+    return mSingers;
   }
 
   @Override
@@ -144,22 +155,15 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
 
 
   /**
-   * Just notifies.
+   * Deletes selected item & notifies view.
    *
    * @param pos The index of the item to remove.
    */
   public void removeItem(int pos) {
+    mSelectedItems.delete(pos);
     notifyItemRemoved(pos);
   }
 
-  /**
-   * Just notifies.
-   *
-   * @param pos The index of the item to add.
-   */
-  public void addItem(int pos) {
-    notifyItemRangeInserted(pos, 1);
-  }
 /**
  * multiple selection operations
  */
@@ -178,15 +182,23 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
     notifyDataSetChanged();
   }
 
-  public int getSelectedItemCount() {
-    return mSelectedItems.size();
+  public SparseBooleanArray getSelectedItemsSBArray() {
+    return mSelectedItems;
   }
 
-  public List<Integer> getSelectedItems() {
-    List<Integer> items = new ArrayList<Integer>(mSelectedItems.size());
-    for (int i = 0; i < getSelectedItemCount(); i++) {
+  public void setSelectedItemsSBArray(SparseBooleanArray newSelectedItems) {
+    this.mSelectedItems = newSelectedItems;
+  }
+
+  public List<Integer> getSelectedItemsList() {
+    List<Integer> items = new ArrayList<>(mSelectedItems.size());
+    for (int i = 0; i < mSelectedItems.size(); i++) {
       items.add(mSelectedItems.keyAt(i));
     }
     return items;
+  }
+
+  public int getSelectedItemCount() {
+    return mSelectedItems.size();
   }
 }

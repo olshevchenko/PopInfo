@@ -10,13 +10,13 @@ import java.util.List;
 /**
  * superclass for operations abstract interfaces
  */
-public class Logic {
+public class Interfaces {
 
   /**
    * interface to complete response of singers information update
    */
   public interface SingersUpdateProcessor {
-    void singersUpdate(List<Singer> newList);
+    void updateSingers(List<Singer> newList);
   }
 
   /**

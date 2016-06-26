@@ -17,7 +17,7 @@ import retrofit2.Response;
 
 import com.example.ol.popinfo.Singers.Singer;
 import com.example.ol.popinfo.Informing;
-import com.example.ol.popinfo.Logic;
+import com.example.ol.popinfo.Interfaces;
 import com.example.ol.popinfo.R;
 import com.example.ol.popinfo.http.dto.SingerDto;
 
@@ -26,7 +26,7 @@ import com.example.ol.popinfo.http.dto.SingerDto;
  * class for Retrofit operation with Yandex HTTP server
  * requests for singers list
  */
-public class YandexClient implements Logic.SingersRequestInfoProcessor {
+public class YandexClient implements Interfaces.SingersRequestInfoProcessor {
   //for logging
   private static final String LOG_TAG = YandexClient.class.getName();
 
@@ -35,12 +35,14 @@ public class YandexClient implements Logic.SingersRequestInfoProcessor {
   private YandexApi.Api mApi;
 
   /// singers update processor interface
-  private Logic.SingersUpdateProcessor mSingersUpdateProcessor = null;
+  private Interfaces.SingersUpdateProcessor mSingersUpdateProcessor = null;
 
-  public YandexClient(Context context, FragmentManager fm) {
+  public YandexClient(Context context,
+                      Interfaces.SingersUpdateProcessor singersUpdateProcessor,
+                      FragmentManager fm) {
     this.mContext = context;
     this.mFM = fm;
-    mSingersUpdateProcessor = (Logic.SingersUpdateProcessor) mContext;
+    mSingersUpdateProcessor = singersUpdateProcessor;
     mApi = YandexApi.getApi();
   }
 
@@ -61,17 +63,14 @@ public class YandexClient implements Logic.SingersRequestInfoProcessor {
           /// get original DTO singers list from Yandex & create work singers list based on DTO one
           List<Singer> singerList = new ArrayList<>(response.body().size());
           Singer singer;
-          int i = 0;
           for (SingerDto singerDto : response.body()) {
             singer = new Singer(singerDto); /// conversion DTO => model
-            ///ToDo Remove it!
-//            singer.getHeader().getData().setRating(i++ % 5);
             singerList.add(singer);
           }
           Log.d(LOG_TAG, "Got new [" + singerList.size() + "] singers");
 
           if (null != mSingersUpdateProcessor)
-            mSingersUpdateProcessor.singersUpdate(singerList);
+            mSingersUpdateProcessor.updateSingers(singerList);
 
         } else {
           /// response received but request not successful (4xx client HTTP error)

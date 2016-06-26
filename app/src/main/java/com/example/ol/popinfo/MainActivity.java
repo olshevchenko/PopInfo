@@ -1,15 +1,16 @@
 package com.example.ol.popinfo;
 
-import android.content.res.Resources;
-import android.graphics.Color;
+import android.app.SearchManager;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ActionMode;
@@ -17,34 +18,30 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 
+import com.example.ol.popinfo.Images.ImagesHelper;
 import com.example.ol.popinfo.Singers.Singer;
-import com.example.ol.popinfo.Singers.SingersHelper;
+import com.example.ol.popinfo.Singers.SingerHelper;
 import com.example.ol.popinfo.http.YandexClient;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-    implements Logic.SingersUpdateProcessor,
-    Logic.OnSingerItemClickListener,
-    Logic.OnSingerDetailEventListener,
+    implements Interfaces.OnSingerItemClickListener,
+    Interfaces.OnSingerDetailEventListener,
     ActionMode.Callback {
 
   /// for logging
   private static final String LOG_TAG = RecyclerAdapter.class.getName();
 
-  private SingersHelper mSingersHelper = null; /// holder for singer's info
-
+  private ListLogic mSingerListLogic; /// engine for singer list processing
+  private SingerHelper mSingerHelper = null; /// holder for singer's info
   private ImagesHelper mImagesHelper = ImagesHelper.getInstance(); /// holder for images
 
   /// Yandex client instance & pure interface reference on it
   private YandexClient mHttpClient = null;
-  private Logic.SingersRequestInfoProcessor mSingersRequestInfoProcessor = null;
-
+  private Interfaces.SingersRequestInfoProcessor mSingersRequestInfoProcessor = null;
 
   private CoordinatorLayout mCoordinatorLayout;
   private Toolbar mToolbar;
@@ -63,17 +60,11 @@ public class MainActivity extends AppCompatActivity
     mToolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(mToolbar);
     mCollapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
-    mCollapsingToolbar.setTitle("PopInfo");
+    mCollapsingToolbar.setTitle(getResources().getString(R.string.main_activity_title));
     ImageView im = (ImageView) findViewById(R.id.toolbarImage);
     Picasso.with(this).load(R.drawable.bar_background).fit().into(im);
 
-    /// init & tune Yandex HTTP instance - IF NOT EXISTS ALREADY
-    if (null == mHttpClient) {
-      mHttpClient = new YandexClient(this, getSupportFragmentManager());
-    }
-    mSingersRequestInfoProcessor = mHttpClient;
-
-    mSingersHelper = new SingersHelper(getApplicationContext());
+    mSingerHelper = new SingerHelper(getApplicationContext());
 
     /// init & tune recycler
     mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
@@ -82,8 +73,30 @@ public class MainActivity extends AppCompatActivity
     mLayoutManager = new LinearLayoutManager(this);
     mRecyclerView.setLayoutManager(mLayoutManager);
 
-    mAdapter = new RecyclerAdapter(this, mImagesHelper, mSingersHelper.getSingerList(), this);
+    mAdapter = new RecyclerAdapter(this, mImagesHelper, mSingerHelper.getCommonList(), this);
     mRecyclerView.setAdapter(mAdapter);
+
+    /// init core logic
+    mSingerListLogic = new ListLogic(getApplicationContext(), mSingerHelper, mAdapter);
+
+    /// init & tune Yandex HTTP instance - IF NOT EXISTS ALREADY
+    if (null == mHttpClient) {
+      mHttpClient = new YandexClient(this, mSingerListLogic, getSupportFragmentManager());
+    }
+    mSingersRequestInfoProcessor = mHttpClient;
+  }
+
+  /**
+   * checks for search query intent and processes it
+   * @param intent
+   */
+  @Override
+  protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+    if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+      String searchQuery = intent.getStringExtra(SearchManager.QUERY);
+      showFoundSingers(searchQuery);
+    }
   }
 
   @Override
@@ -95,12 +108,12 @@ public class MainActivity extends AppCompatActivity
   @Override
   protected void onPause() {
     super.onPause();
-    mSingersHelper.saveFavoriteSingers(); ///store favorite singers locally
+    mSingerHelper.saveFavoriteSingers(); ///store favorite singers locally
 /*
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
-        mSingersHelper.saveFavoriteSingers(); ///store favorite singers locally
+        mSingerHelper.saveFavoriteSingers(); ///store favorite singers locally
       }
     });
     thread.start();
@@ -109,16 +122,38 @@ public class MainActivity extends AppCompatActivity
   }
 
   @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    // Inflate the menu; this adds items to the action bar if it is present.
+  public boolean onCreateOptionsMenu(final Menu menu) {
     getMenuInflater().inflate(R.menu.menu_main, menu);
 
-    ///update corresponding 'sorting' item state
-    if (null != mSingersHelper) {
+    /// search configuration
+    SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+    SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+//    SearchView searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
+    searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+    searchView.setIconifiedByDefault(true); /// collapsed by default
+
+    /// hide & show all menu according to search collapsing state
+    final MenuItem itemSearch = menu.findItem(R.id.action_search);
+    MenuItemCompat.setOnActionExpandListener(itemSearch, new MenuItemCompat.OnActionExpandListener() {
+      @Override
+      public boolean onMenuItemActionExpand(final MenuItem item) {
+        setOptionsItemsVisibility(menu, itemSearch, false); /// hide another items
+        return true;
+      }
+      @Override
+      public boolean onMenuItemActionCollapse(final MenuItem item) {
+        setOptionsItemsVisibility(menu, itemSearch, true); /// show all menu items back
+        clearFoundSingers();
+        return true;
+      }
+    });
+
+    /// update corresponding 'sorting' item state
+    if (null != mSingerHelper) {
       MenuItem itemNone = menu.findItem(R.id.action_sort_by_none);
       MenuItem itemByName = menu.findItem(R.id.action_sort_by_name);
       MenuItem itemByGenres = menu.findItem(R.id.action_sort_by_genres);
-      switch (mSingersHelper.getSortingState()) {
+      switch (mSingerHelper.getSortingState()) {
         case BY_NAME:
           if (null != itemByName)
             itemByName.setChecked(true);
@@ -137,6 +172,15 @@ public class MainActivity extends AppCompatActivity
     return true;
   }
 
+  private void setOptionsItemsVisibility(final Menu menu, final MenuItem excepted,
+                                         final boolean visible) {
+    for (int i = 0; i < menu.size(); ++i) {
+      MenuItem item = menu.getItem(i);
+      if (item != excepted)
+        item.setVisible(visible);
+    }
+  }
+
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     int id = item.getItemId();
@@ -148,42 +192,12 @@ public class MainActivity extends AppCompatActivity
         return true;
 
       case R.id.action_sort_by_none:
-        if (item.isChecked())
-          ; /// nothing to do
-        else {
-          if (null != mSingersHelper) {
-            item.setChecked(true);
-            mSingersHelper.setSortingState(Constants.SortingState.NOT);
-            mSingersHelper.sortById();
-            mAdapter.notifyDataSetChanged();
-          }
-        }
-        return true;
-
       case R.id.action_sort_by_name:
-        if (item.isChecked())
-          ; /// nothing to do
-        else {
-          if (null != mSingersHelper) {
-            item.setChecked(true);
-            mSingersHelper.setSortingState(Constants.SortingState.BY_NAME);
-            mSingersHelper.sortByName();
-            mAdapter.notifyDataSetChanged();
-          }
-        }
-        return true;
-
       case R.id.action_sort_by_genres:
         if (item.isChecked())
           ; /// nothing to do
-        else {
-          if (null != mSingersHelper) {
-            item.setChecked(true);
-            mSingersHelper.setSortingState(Constants.SortingState.BY_GENRES);
-            mSingersHelper.sortByGenres();
-            mAdapter.notifyDataSetChanged();
-          }
-        }
+        else
+          mSingerListLogic.sortSingers(item);
         return true;
 
       case R.id.action_search:
@@ -192,37 +206,46 @@ public class MainActivity extends AppCompatActivity
 
       default:
         return super.onOptionsItemSelected(item);
-
     }
   }
 
-  @Override
-  public void singersUpdate(List<Singer> newList) {
-    mSingersHelper.setCommonList(newList); /// store the records newly loaded from the server side
-    mSingersHelper.mergeLists(); /// merge with local favorite ones
-    mSingersHelper.sort(); /// resort the list just assembled accordingly
-    mAdapter.notifyDataSetChanged();
+
+
+  /**
+   * creates new list from search results and shows them up
+   * @param searchQuery - name (mask) of artists to search from main list
+   */
+  private void showFoundSingers(String searchQuery) {
+    mAdapter.resetList(mSingerHelper.makeSearchByName(searchQuery));
   }
+
+  /**
+   * restores original BIG singerList
+   */
+  private void clearFoundSingers() {
+    mSingerHelper.clearSearch();
+    mAdapter.resetList(mSingerHelper.getCommonList());
+  }
+
 
   @Override
   public void onRatingBarChange(Singer singer, int value) {
-    mSingersHelper.changeRating(singer, value);
+    mSingerHelper.changeSingerRating(singer, value);
   }
 
   @Override
   public void onClick(int position, View view) {
-    if (null != mSingersHelper) {
-      Singer singer = mSingersHelper.getSinger(position);
-      Log.d(LOG_TAG, "onClick(pos:" + position + ", Singer:" + singer + ")");
+    if (null != mSingerHelper) {
+//ToDo remake to workingList item!
+//      Singer singer = mSingerHelper.getSinger(position);
+      Log.d(LOG_TAG, "onClick(pos:" + position + ")");
     }
   }
 
   @Override
   public boolean onLongClick(int position, View view) {
-    if (null != mSingersHelper) {
+    if (null != mSingerHelper) {
       /// toggle item's selection
-      Singer singer = mSingersHelper.getSinger(position);
-      Log.d(LOG_TAG, "onLongClick(pos:" + position + ", Singer:" + singer + ")");
       mAdapter.toggleSelection(position);
 
       if (null == mCABMode) { /// Start the CAB through the ActionMode.Callback
@@ -257,7 +280,7 @@ public class MainActivity extends AppCompatActivity
   public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
     switch (menuItem.getItemId()) {
       case R.id.menu_delete:
-        deleteSelectedSingers();
+        mSingerListLogic.deleteSelectedSingers(mCABMode, mCoordinatorLayout);
         return true;
       default:
         return false;
@@ -270,65 +293,4 @@ public class MainActivity extends AppCompatActivity
     mAdapter.clearSelections();
   }
 
-  /**
-   * deletes selected part of singers list (both in singers data storage and adapter
-   * allows to undo deletion by using snackbar w.action
-   */
-  private void deleteSelectedSingers() {
-    final List<Integer> selectedItemPositions = mAdapter.getSelectedItems();
-    if (null == selectedItemPositions)
-      return;
-    final int selectedNum = selectedItemPositions.size();
-    if (0 == selectedNum)
-      return;
-
-    /// reversely sort positions to prevent chaos during undeletion
-    Collections.sort(selectedItemPositions);
-    Collections.reverse(selectedItemPositions);
-
-    /// tmp. stored items for delayed (UNDO) removing
-    final List<Singer> singers2Remove = new ArrayList<>(selectedNum);
-
-    /// execute predeletion
-    int currPos;
-    for (int i = 0; i < selectedNum; i++) { /// shift remainder up
-      currPos = selectedItemPositions.get(i);
-      singers2Remove.add(mSingersHelper.getSinger(currPos)); /// store the UNDO item (reversely)
-      mSingersHelper.removeSinger(currPos);
-      mAdapter.removeItem(currPos); /// update view
-    }
-
-    /// show UNDO case
-    Snackbar snackbar = Snackbar
-        .make(mCoordinatorLayout, getString(R.string.sb_count_deleted, selectedNum), Snackbar.LENGTH_LONG)
-        .setCallback(new Snackbar.Callback() {
-          @Override
-          public void onDismissed(Snackbar snackbar, int event) {
-            if (DISMISS_EVENT_ACTION == event)
-              ;
-            else {
-              singers2Remove.clear();
-              mCABMode.finish();
-            }
-          }
-        })
-        .setAction(getString(R.string.sb_undo), new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            int currPos;
-            for (int i = selectedNum-1; i >= 0; i--) { /// restore items from the list head
-              currPos = selectedItemPositions.get(i);
-              mSingersHelper.addSinger(singers2Remove.get(i), currPos); /// add back to the old pos
-              mAdapter.addItem(currPos); /// update view
-            }
-            singers2Remove.clear();
-          }
-        });
-
-    // Changing message text color
-    snackbar.setActionTextColor(Color.RED);
-    snackbar.getView().setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-    snackbar.setDuration(Snackbar.LENGTH_SHORT);
-    snackbar.show();
-  }
 }

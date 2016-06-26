@@ -15,16 +15,17 @@ import java.util.List;
  * Created by ol on 15.04.16.
  */
 
-public class SingersHelper {
+public class SingerHelper {
   //for logging
-  private static final String LOG_TAG = SingersHelper.class.getName();
+  private static final String LOG_TAG = SingerHelper.class.getName();
 
-  private List<Singer> singerList = new ArrayList<>(Constants.Singers.NUMBER_OF);
+  private List<Singer> commonList = new ArrayList<>(Constants.Singers.NUMBER_OF);
   private List<Singer> favList;
+  private Boolean isSearchingState = false;
   private Constants.SortingState sortingState = Constants.SortingState.NOT;
   private JsonSerializer mSerializer;
 
-  public SingersHelper(Context context) {
+  public SingerHelper(Context context) {
     mSerializer = new JsonSerializer(context, Constants.IO.SINGERS_FILENAME);
 
     /// try to load favorites locally
@@ -41,13 +42,11 @@ public class SingersHelper {
     }
   }
 
-  public void setCommonList(List<Singer> singerList) {
-    if (this.singerList == singerList)
+  public void resetCommonList(List<Singer> singerList) {
+    if (this.commonList == singerList)
       ; /// case for call after cfg change
-    else {
-      this.singerList.clear();
-      this.singerList.addAll(singerList);
-    }
+    else
+      this.commonList = singerList;
   }
 
   /**
@@ -56,54 +55,22 @@ public class SingersHelper {
    * 2) adds all remained favorite records into the common list that aren't there yet
    */
   public void mergeLists() {
-    singerList.removeAll(favList); /// remove duplicates w/O rating scores, if exist
-    singerList.addAll(favList); /// all ALL favorites
+    commonList.removeAll(favList); /// remove duplicates w/O rating scores, if exist
+    commonList.addAll(favList); /// all ALL favorites
   }
 
-  public List<Singer> getSingerList() {
-    return singerList;
-  }
-
-  public Singer getSinger(int number) throws IndexOutOfBoundsException {
-    return singerList.get(number);
+  public List<Singer> getCommonList() {
+    return commonList;
   }
 
 
   /**
-   * removes ONE singer item from both (common & favorite if one has rating rank) lists
-   */
-  public void removeSinger(int number) throws IndexOutOfBoundsException {
-    Singer singer = singerList.get(number);
-    for (Singer fav:favList) {
-      if (fav.equals(singer)) {
-        favList.remove(fav);
-        break;
-      }
-    }
-    singerList.remove(number);
-  }
-
-
-  /**
-   * Adds the singer to the common list at the exact position
-   * copy it to the favorite list, if necessary
-   */
-  public void addSinger(Singer newSinger, int pos) {
-    singerList.add(pos, newSinger);
-    changeFavorite(newSinger, newSinger.getHeader().getData().getRating());
-  }
-
-
-  /**
-   * removes LIST OF singers items from both (common & favorite if one has rating rank) lists
-
-   * erges common list with favorite one:
-   * 1) transmits rating from favorites into the same records in the common list
-   * 2) adds all remained favorite records into the common list that aren't there yet
+   * removes LIST OF singers items from common & favorite (if there are) lists
    */
   public void removeSingers(List<Singer> delList) {
-    singerList.removeAll(delList);
-    favList.removeAll(delList); /// as well as from common
+    commonList.removeAll(delList);
+    if (null != favList)
+      favList.removeAll(delList);
   }
 
 
@@ -125,15 +92,15 @@ public class SingersHelper {
   }
 
   public void sortById() {
-    Collections.sort(singerList, Singer.SORTED_BY_ID);
+    Collections.sort(commonList, Singer.SORTED_BY_ID);
   }
 
   public void sortByName() {
-    Collections.sort(singerList, Singer.SORTED_BY_NAME);
+    Collections.sort(commonList, Singer.SORTED_BY_NAME);
   }
 
   public void sortByGenres() {
-    Collections.sort(singerList, Singer.SORTED_BY_GENRES);
+    Collections.sort(commonList, Singer.SORTED_BY_GENRES);
   }
 
   public Constants.SortingState getSortingState() {
@@ -145,15 +112,37 @@ public class SingersHelper {
   }
 
   /**
+   * @param name - search criteria (MASK).
+   * @return partial list of copies from original commonList items that corresponds to <name> mask
+   */
+  public List<Singer> makeSearchByName(String name) {
+    isSearchingState = true;
+    List <Singer> searchList = new ArrayList<>(commonList.size());
+    for (Singer singer : commonList) {
+      if (singer.getHeader().getData().getName().contains(name))
+        searchList.add(singer);
+    }
+    return searchList;
+  }
+
+  public Boolean getSearchingState() {
+    return isSearchingState;
+  }
+
+  public void clearSearch() {
+    isSearchingState = false;
+  }
+
+  /**
    * wrapper for the common singer rating change
    * additionally, processes possible favorite records change
    * @param singer - the whole singer record
    * @param value  - new rating value
    */
-  public void changeRating(Singer singer, int value) {
+  public void changeSingerRating(Singer singer, int value) {
     Log.d(LOG_TAG, "Change singer " + singer + " rating to: " + value);
     singer.getHeader().getData().setRating(value);
-    changeFavorite(singer, value);
+    updateFavorite(singer, value);
   }
 
   /**
@@ -161,7 +150,7 @@ public class SingersHelper {
    * @param singer - the whole singer record
    * @param value  - new rating value
    */
-  private void changeFavorite(Singer singer, int value) {
+  private void updateFavorite(Singer singer, int value) {
     for (Singer fav:favList) {
       if (fav.equals(singer)) {
         if (0 == value) { /// got 0 for existed record => remove it..
