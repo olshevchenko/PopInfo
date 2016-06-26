@@ -1,9 +1,12 @@
 <resources>
 
-    <!-- Title, main menu -->
+    <!-- Titles, main menu -->
     <string name="app_name">PopInfo</string>
+    <string name="main_activity_title">Artist list</string>
+    <string name="details_activity_title">Details</string>
     <string name="action_reload">Reload list</string>
     <string name="action_search">Search artist...</string>
+    <string name="search_hint">Artist name</string>
     <string name="action_sort">Sort list...</string>
     <string name="action_about">About</string>
     <string name="action_settings">Settings</string>
