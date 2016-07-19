@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- phone-landscape -->
+    <integer name="selected_configuration_type">@integer/cfg_phone_landscape</integer>
+</resources>

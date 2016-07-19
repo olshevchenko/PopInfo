@@ -1,6 +1,7 @@
 package com.example.ol.popinfo;
 
 
+import android.content.Context;
 import android.view.View;
 
 import com.example.ol.popinfo.Singers.Singer;
@@ -23,7 +24,7 @@ public class Interfaces {
    * interface to process request for singers information update
    */
   public interface SingersRequestInfoProcessor {
-    void singersRequestInfo();
+    void singersRequestInfo(Context context);
   }
 
   /**
@@ -35,10 +36,10 @@ public class Interfaces {
   }
 
   /**
-   * interface to process events on separated singer item
+   * interface to process detailed view of requested Singer
    */
-  public interface OnSingerDetailEventListener {
-    void onRatingBarChange(Singer singer, int value);
+  public interface SingerDetailViewProcessor {
+    void singerDetailView(Singer singerDetailed);
   }
 }
 

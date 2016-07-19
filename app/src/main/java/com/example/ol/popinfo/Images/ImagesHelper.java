@@ -26,6 +26,9 @@ public class ImagesHelper {
 
   private static ImagesHelper sImagesHelper = new ImagesHelper();
 
+  /**
+   * non-lazy thread-safe singleton
+   */
   public static ImagesHelper getInstance() {
     return sImagesHelper;
   }
@@ -70,7 +73,7 @@ public class ImagesHelper {
     } else {
       imageView.setImageResource(R.drawable.ic_photo_white_48dp);
       BitmapWorkerTask task = new BitmapWorkerTask(imageKey, imageView);
-      task.execute(imageUrl, imageKey);
+      task.execute(imageUrl);
     }
   }
 

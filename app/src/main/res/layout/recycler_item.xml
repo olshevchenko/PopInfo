@@ -10,9 +10,8 @@
         android:id="@+id/cardView"
         android:layout_gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
-        card_view:contentPaddingLeft="10dp"
-        card_view:contentPaddingBottom="15dp"
+        android:layout_height="@dimen/card_list_view_height"
+        card_view:contentPaddingLeft="@dimen/card_list_view_margin"
         card_view:cardCornerRadius="6dp"
         card_view:cardElevation="6dp"
         card_view:cardUseCompatPadding="true">
@@ -25,26 +24,25 @@
                 android:id="@+id/ivCoverSmall"
                 android:layout_height="150dp"
                 android:layout_width="150dp"
-                android:layout_marginTop="15dp"/>
+                android:layout_marginTop="@dimen/card_list_view_margin"
+                android:layout_marginBottom="@dimen/card_list_view_margin"/>
 
             <FrameLayout
-                android:layout_toRightOf="@+id/ivCoverSmall"
+                android:layout_toEndOf="@+id/ivCoverSmall"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
                 <RelativeLayout
                     android:id="@+id/rlSingerInfo"
-                    android:layout_toRightOf="@+id/ivCoverSmall"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_alignBottom="@+id/ivCoverSmall"
-                    android:layout_marginLeft="12dp"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginRight="10dp">
+                    android:layout_margin="@dimen/card_list_view_margin">
                     <TextView
                         android:id="@+id/tvSingerName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginTop="@dimen/card_list_view_margin"
+                        android:layout_marginBottom="@dimen/card_list_view_margin"
                         android:text="Tove Lo"
                         style="@style/TextStyleName"/>
                     <TextView
@@ -52,50 +50,45 @@
                         android:layout_below="@id/tvSingerName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/card_list_view_margin"
                         android:text="pop, dance, electronics"
                         style="@style/TextStyleOthers"/>
                     <TextView
-                        android:id="@+id/tvSingerAlbumsTracks"
+                        android:id="@+id/tvSingerAlbums"
                         android:layout_below="@id/tvSingerGenres"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="22 albums, 81 tracks"
+                        android:layout_marginTop="@dimen/card_list_view_margin"
+                        android:text="albums: 22"
                         style="@style/TextStyleOthers"/>
-
-                    <RelativeLayout
-                        android:layout_below="@id/tvSingerAlbumsTracks"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="16dp"
-                        android:gravity="bottom"
-                        android:layout_alignParentBottom="true">
-                        <RatingBar
-                            android:id="@+id/rbSingerRating"
-                            style="@style/CustomRatingBar"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:scaleX="0.7"
-                            android:scaleY="0.7"
-                            android:transformPivotX="0dp"
-                            android:transformPivotY="0dp"
-                            android:rating="0"
-                            android:stepSize="1"
-                            android:numStars="@integer/rating_stars_num"
-                            android:layout_alignParentBottom="true"/>
-                    </RelativeLayout>
-
+                    <TextView
+                        android:id="@+id/tvSingerTracks"
+                        android:layout_below="@id/tvSingerAlbums"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/card_list_view_margin"
+                        android:text="tracks: 81"
+                        style="@style/TextStyleOthers"/>
                 </RelativeLayout>
 
                 <ImageView
                     android:id="@+id/ivSelector"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="top|right"
+                    android:layout_gravity="top|end"
                     android:src="@drawable/ic_check_circle_white_36dp"
                     android:visibility="gone">
                 </ImageView>
+
+                <ImageView
+                    android:id="@+id/ivFavorite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:src="@drawable/ic_favorite_black_24dp_my"
+                    android:visibility="gone">
+                </ImageView>
+
             </FrameLayout>
         </RelativeLayout>
 

@@ -2,7 +2,9 @@
     <dimen name="app_bar_height">180dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+
     <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="detail_view_margin">16dp</dimen>
+    <dimen name="card_list_view_margin">8dp</dimen>
+    <dimen name="card_list_view_height">166dp</dimen> <!-- 150 + 2*(card_list_view_margin) -->
 </resources>

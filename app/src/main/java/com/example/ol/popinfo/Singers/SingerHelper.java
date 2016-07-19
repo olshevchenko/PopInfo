@@ -16,16 +16,18 @@ import java.util.List;
  */
 
 public class SingerHelper {
+  private static SingerHelper instance = null;
+
   //for logging
   private static final String LOG_TAG = SingerHelper.class.getName();
 
-  private List<Singer> commonList = new ArrayList<>(Constants.Singers.NUMBER_OF);
-  private List<Singer> favList;
+  private static List<Singer> commonList = new ArrayList<>(Constants.Singers.NUMBER_OF);
+  private static List<Singer> favList;
   private Boolean isSearchingState = false;
   private Constants.SortingState sortingState = Constants.SortingState.NOT;
   private JsonSerializer mSerializer;
 
-  public SingerHelper(Context context) {
+  private SingerHelper(Context context) {
     mSerializer = new JsonSerializer(context, Constants.IO.SINGERS_FILENAME);
 
     /// try to load favorites locally
@@ -40,6 +42,16 @@ public class SingerHelper {
       Log.w(LOG_TAG, "Failed to load favorite singers - use empty list..");
       favList = new ArrayList<>(Constants.Singers.NUMBER_OF_FAV);
     }
+  }
+
+  /**
+   * lazy inited singleton
+   * NOT thread-safe - doesn't matter due to usage UI-from only
+   */
+  public static SingerHelper getInstance(Context context) {
+    if (null == instance)
+      instance = new SingerHelper(context);
+    return instance;
   }
 
   public void resetCommonList(List<Singer> singerList) {

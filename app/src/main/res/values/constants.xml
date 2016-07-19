@@ -2,4 +2,9 @@
 <resources>
     <integer name="rating_stars_num">5</integer>
     <integer name="singer_cardview_elevation">6</integer>
+
+    <integer name="cfg_phone_portrait">0</integer>
+    <integer name="cfg_tablet_portrait">1</integer>
+    <integer name="cfg_phone_landscape">2</integer>
+    <integer name="cfg_tablet_landscape">3</integer>
 </resources>

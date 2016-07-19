@@ -30,27 +30,28 @@ public class YandexClient implements Interfaces.SingersRequestInfoProcessor {
   //for logging
   private static final String LOG_TAG = YandexClient.class.getName();
 
-  private Context mContext;
   private FragmentManager mFM;
   private YandexApi.Api mApi;
 
   /// singers update processor interface
   private Interfaces.SingersUpdateProcessor mSingersUpdateProcessor = null;
 
-  public YandexClient(Context context,
-                      Interfaces.SingersUpdateProcessor singersUpdateProcessor,
+  public YandexClient(Interfaces.SingersUpdateProcessor singersUpdateProcessor,
                       FragmentManager fm) {
-    this.mContext = context;
-    this.mFM = fm;
+    mFM = fm;
     mSingersUpdateProcessor = singersUpdateProcessor;
     mApi = YandexApi.getApi();
   }
 
-  @Override
-  public void singersRequestInfo() {
+  public void setFragmentManager(FragmentManager newFM) {
+    mFM = newFM;
+  }
 
-    final ProgressDialog dialog = ProgressDialog.show(mContext, "",
-        mContext.getString(R.string.dlgGettingSingersList), false, false);
+  @Override
+  public void singersRequestInfo(Context context) {
+
+    final ProgressDialog dialog = ProgressDialog.show(context, "",
+        context.getString(R.string.dlgGettingSingersList), false, false);
 
     Call<List<SingerDto>> call = mApi.getArtists();
 

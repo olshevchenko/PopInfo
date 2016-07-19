@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- tablet-portrait -->
+    <integer name="selected_configuration_type">@integer/cfg_tablet_portrait</integer>
+</resources>

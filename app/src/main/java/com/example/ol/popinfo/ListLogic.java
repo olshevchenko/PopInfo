@@ -93,7 +93,7 @@ public class ListLogic implements Interfaces.SingersUpdateProcessor {
       currPos = selectedItemPositions.get(i);
       singers2Remove.add(fromList.get(currPos));
       fromList.remove(currPos);
-      mAdapter.removeItem(currPos); /// update view
+      mAdapter.removeSelectedItem(currPos); /// update view
     }
 
     /// show UNDO case

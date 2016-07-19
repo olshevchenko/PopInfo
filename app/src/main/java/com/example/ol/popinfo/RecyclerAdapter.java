@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.example.ol.popinfo.Images.ImagesHelper;
@@ -44,8 +43,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
     ImageView mSingerCoverSmall;
     TextView mSingerName;
     TextView mSingerGenres;
-    TextView mSingerAlbumsTracks;
-    RatingBar mSingerRating;
+    TextView mSingerAlbums;
+    TextView mSingerTracks;
+    ImageView mSingerFavorite;
     ImageView mSelector;
 
     SingerViewHolder(View itemView) {
@@ -56,8 +56,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
       mSingerCoverSmall = (ImageView)itemView.findViewById(R.id.ivCoverSmall);
       mSingerName = (TextView)itemView.findViewById(R.id.tvSingerName);
       mSingerGenres = (TextView)itemView.findViewById(R.id.tvSingerGenres);
-      mSingerAlbumsTracks = (TextView)itemView.findViewById(R.id.tvSingerAlbumsTracks);
-      mSingerRating = (RatingBar)itemView.findViewById(R.id.rbSingerRating);
+      mSingerAlbums = (TextView)itemView.findViewById(R.id.tvSingerAlbums);
+      mSingerTracks = (TextView)itemView.findViewById(R.id.tvSingerTracks);
+      mSingerFavorite = (ImageView)itemView.findViewById(R.id.ivFavorite);
       mSelector = (ImageView)itemView.findViewById(R.id.ivSelector);
     }
 
@@ -80,15 +81,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
       mImagesHelper.setImageBitmap(header.getCoverSmall(), mSingerCoverSmall); /// ASYNCHRONOUSLY
       mSingerName.setText(data.getName());
       mSingerGenres.setText(data.getGenres());
-      mSingerRating.setRating((float)data.getRating());
+      mSingerFavorite.setVisibility(data.getRating() > 0? View.VISIBLE : View.GONE);
 
-      /// split the whole string from 2 numbers + 2 localized strings
-      StringBuilder albumsTracks = new StringBuilder(Constants.Singers.ALBUMS_TRACKS_STR_LEN);
-      albumsTracks.append(sAlbumsStr);
-      albumsTracks.append(data.getAlbums());
-      albumsTracks.append(sTracksStr);
-      albumsTracks.append(data.getTracks());
-      mSingerAlbumsTracks.setText(albumsTracks.toString());
+      mSingerAlbums.setText(sAlbumsStr + Integer.toString(data.getAlbums()));
+      mSingerTracks.setText(sTracksStr + Integer.toString(data.getTracks()));
     }
 
     @Override
@@ -148,9 +144,13 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
     holder.bind(mSingers.get(position), mSelectedItems.get(position, false));
   }
 
+  public Singer getItem(int position) {
+    return mSingers.get(position);
+  }
+
   @Override
   public int getItemCount() {
-  return mSingers.size();
+    return mSingers.size();
   }
 
 
@@ -159,7 +159,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
    *
    * @param pos The index of the item to remove.
    */
-  public void removeItem(int pos) {
+  public void removeSelectedItem(int pos) {
     mSelectedItems.delete(pos);
     notifyItemRemoved(pos);
   }
