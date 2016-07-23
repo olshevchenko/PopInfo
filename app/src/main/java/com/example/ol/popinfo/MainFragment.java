@@ -48,6 +48,8 @@ public class MainFragment extends Fragment
   private RecyclerView.LayoutManager mLayoutManager;
   private ActionMode mCABMode;
 
+  private int mClickedPosition = -1; /// click item storage
+
   @SuppressWarnings("deprecation")
   @Override
   public void onAttach(Activity activity) {
@@ -106,8 +108,8 @@ public class MainFragment extends Fragment
   }
 
   @Override
-  public void onStart() {
-    super.onStart();
+  public void onResume() {
+    super.onResume();
     View view = getView();
     if ((null == view) ||
         (null == mImagesHelper))
@@ -116,6 +118,10 @@ public class MainFragment extends Fragment
     if (0 == mSingerHelper.getCommonList().size())
       /// load singers automatically only 1'st time
       mSingersRequestInfoProcessor.singersRequestInfo(mActivity);
+
+    if (mClickedPosition >= 0)
+      /// we are possible back from singer details view => refresh this singer item
+      mAdapter.notifyItemChanged(mClickedPosition);
   }
 
   @Override
@@ -238,30 +244,30 @@ public class MainFragment extends Fragment
 
   @Override
   public void onClick(int position, View view) {
+    mClickedPosition = position;
     /// pass click singer event through up for detail show
     mSingerDetailViewProcessor.singerDetailView(mAdapter.getItem(position));
   }
 
   @Override
-  public boolean onLongClick(int position, View view) {
-    if (null != mSingerHelper) {
-      /// toggle item's selection
-      mAdapter.toggleSelection(position);
+  public void onLongClick(int position, View view) {
+    if (null == mSingerHelper)
+      return;
 
-      if (null == mCABMode) { /// Start the CAB through the ActionMode.Callback
-        mCABMode = getActivity().startActionMode(MainFragment.this);
-      }
-      /// eval & show selection counter as a CAB title
-      int selectedNum = mAdapter.getSelectedItemCount();
-      if (0 == selectedNum)
-        mCABMode.finish(); /// just nothing to do..
-      else {
-        String title = getString(R.string.count_cab_selected, mAdapter.getSelectedItemCount());
-        mCABMode.setTitle(title);
-      }
-      return true;
+    /// toggle item's selection
+    mAdapter.toggleSelection(position);
+
+    if (null == mCABMode) { /// Start the CAB through the ActionMode.Callback
+      mCABMode = getActivity().startActionMode(MainFragment.this);
     }
-    return false;
+    /// eval & show selection counter as a CAB title
+    int selectedNum = mAdapter.getSelectedItemCount();
+    if (0 == selectedNum)
+      mCABMode.finish(); /// just nothing to do..
+    else {
+      String title = getString(R.string.count_cab_selected, mAdapter.getSelectedItemCount());
+      mCABMode.setTitle(title);
+      }
   }
 
   @Override

@@ -32,7 +32,7 @@ public class Interfaces {
    */
   public interface OnSingerItemClickListener {
     void onClick(int position, View view); /// for starting detail view
-    boolean onLongClick(int position, View view); /// for (multiple) selection
+    void onLongClick(int position, View view); /// for (multiple) selection
   }
 
   /**

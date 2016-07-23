@@ -35,6 +35,7 @@ public final class Constants {
     public static final short NUMBER_OF = 100; /// initial number of singers
     public static final short NUMBER_OF_FAV = 33; /// initial number of favorite singers
     public static final short GENRES_STR_LEN = 96; /// initial size of 'genres' list size in String
+    public static final int   COVER_BIG_IMG_SIZE = 1000; /// square image size (in px)
   }
 
   public enum SortingState { NOT, BY_NAME, BY_GENRES }

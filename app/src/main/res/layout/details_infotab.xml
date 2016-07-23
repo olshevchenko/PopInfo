@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".DetailsActivity"
+    android:id="@+id/tlDetailInfotab"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="@dimen/detail_view_margin">
+
+    <TableRow
+        android:id="@+id/tbDetailRowName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tvDetailNameTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="@dimen/detail_view_margin"
+            android:text="@string/tvDetailNameTitle"/>
+        <TextView
+            android:id="@+id/tvDetailName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tove Lo"
+            style="@style/TextStyleName"/>
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tbDetailRowLink"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tvDetailLinkTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="@dimen/detail_view_margin"
+            android:text="@string/tvDetailLinkTitle"/>
+        <TextView
+            android:id="@+id/tvDetailLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="tove_lo.com"/>
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tbDetailRowGenres"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/detail_view_margin">
+        <TextView
+            android:id="@+id/tvDetailGenresTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="@dimen/detail_view_margin"
+            android:text="@string/tvDetailGenresTitle"/>
+        <TextView
+            android:id="@+id/tvDetailGenres"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="pop, dance, electronics"/>
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tbDetailRowAlbums"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tvDetailAlbumsTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="@dimen/detail_view_margin"
+            android:text="@string/tvDetailAlbumsTitle"/>
+        <TextView
+            android:id="@+id/tvDetailAlbums"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="albums: 22"/>
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tbDetailRowTracks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tvDetailTracksTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="@dimen/detail_view_margin"/>
+        <TextView
+            android:id="@+id/tvDetailTracks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="tracks: 81"/>
+    </TableRow>
+</TableLayout>

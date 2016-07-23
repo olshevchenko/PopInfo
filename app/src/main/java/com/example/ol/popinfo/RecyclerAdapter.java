@@ -21,7 +21,6 @@ import java.util.List;
  * Created by ol on 12.04.16.
  */
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.SingerViewHolder> {
-
   /// for logging
   private static final String LOG_TAG = RecyclerAdapter.class.getName();
 
@@ -71,7 +70,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
     public void bind(final Singer singerItem, boolean isSelected) {
       /// 1'st, highlight the item accordingly
       mCV.setCardBackgroundColor(isSelected? sCardSelectColor : sCardDefColor);
-//      mCV.setMaxCardElevation(isSelected? 0.0f : 6.0f);
       mSelector.setVisibility(isSelected? View.VISIBLE : View.GONE);
 
       /// then, draw the item's content
@@ -89,16 +87,20 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
 
     @Override
     public void onClick(View view) {
-      mClickListener.onClick(getAdapterPosition(), view);
+      if (null != mClickListener)
+        mClickListener.onClick(getAdapterPosition(), view);
     }
 
     @Override
     public boolean onLongClick(View view) {
-      return mClickListener.onLongClick(getAdapterPosition(), view);
+      if (null != mClickListener)
+        mClickListener.onLongClick(getAdapterPosition(), view);
+      return true;
     }
 
   }
 
+  @SuppressWarnings("deprecation")
   public RecyclerAdapter(Context context,
                          ImagesHelper imagesHelper,
                          List<Singer> singers,
@@ -156,8 +158,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
 
   /**
    * Deletes selected item & notifies view.
-   *
-   * @param pos The index of the item to remove.
    */
   public void removeSelectedItem(int pos) {
     mSelectedItems.delete(pos);

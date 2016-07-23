@@ -11,7 +11,7 @@
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="160dp"
+        android:layout_height="@dimen/app_bar_height"
         android:fitsSystemWindows="true"
         android:theme="@style/MyActionBarStyle">
 
@@ -22,9 +22,9 @@
             app:contentScrim="@android:color/transparent"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             android:fitsSystemWindows="true"
-            app:expandedTitleMarginBottom="32dp"
-            app:expandedTitleMarginEnd="64dp"
-            app:expandedTitleMarginStart="48dp">
+            app:expandedTitleMarginBottom="@dimen/ctb_expanded_title_marginBottom"
+            app:expandedTitleMarginEnd="@dimen/ctb_expanded_title_marginEnd"
+            app:expandedTitleMarginStart="@dimen/ctb_expanded_title_marginStart">
 
             <ImageView
                 android:id="@+id/toolbarImage"
