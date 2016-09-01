@@ -6,8 +6,10 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.ol.popinfo.Singers.Singer;
 import com.example.ol.popinfo.Singers.SingerHelper;
@@ -23,17 +25,14 @@ import java.util.List;
 /**
  * Core logic for singer list
  */
-public class ListLogic implements Interfaces.SingersUpdateProcessor {
+public class ListLogic {
   private Context mContext;
-  private SingerHelper mSingerHelper = null; /// holder for singer's info
   private RecyclerAdapter mAdapter;
 
 
   public ListLogic(final Context context,
-                   final SingerHelper singerHelper,
                    final RecyclerAdapter adapter) {
     mContext = context;
-    mSingerHelper = singerHelper;
     mAdapter = adapter;
   }
 
@@ -42,22 +41,17 @@ public class ListLogic implements Interfaces.SingersUpdateProcessor {
    * @param item - menu item checked
    */
   public void sortSingers(MenuItem item) {
-    if (null == mSingerHelper)
-      return;
     item.setChecked(true);
     switch (item.getItemId()) {
       case R.id.action_sort_by_name:
-        mSingerHelper.setSortingState(Constants.SortingState.BY_NAME);
-        mSingerHelper.sortByName();
+        SingerHelper.Sorting.sortByName();
         break;
       case R.id.action_sort_by_genres:
-        mSingerHelper.setSortingState(Constants.SortingState.BY_GENRES);
-        mSingerHelper.sortByGenres();
+        SingerHelper.Sorting.sortByGenres();
         break;
       case R.id.action_sort_by_none:
       default:
-        mSingerHelper.setSortingState(Constants.SortingState.NOT);
-        mSingerHelper.sortById();
+        SingerHelper.Sorting.sortById();
         break;
     }
     mAdapter.notifyDataSetChanged();
@@ -105,7 +99,7 @@ public class ListLogic implements Interfaces.SingersUpdateProcessor {
             if (DISMISS_EVENT_ACTION == event)
               ;
             else {
-              mSingerHelper.removeSingers(singers2Remove);
+              SingerHelper.Lists.removeSingers(singers2Remove);
               singers2Remove.clear();
               undoList.clear();
               undoSelectedItemsArray.clear();
@@ -117,10 +111,10 @@ public class ListLogic implements Interfaces.SingersUpdateProcessor {
         .setAction(mContext.getString(R.string.sb_undo), new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            if (mSingerHelper.getSearchingState())
+            if (SingerHelper.Searching.getSearchingState())
               ; /// if delete from search - nothing to restore in singer (common) storage
             else
-              mSingerHelper.resetCommonList(undoList);
+              SingerHelper.Lists.resetCommonList(undoList);
             mAdapter.resetList(undoList); /// restore view with original list from backup
             mAdapter.setSelectedItemsSBArray(undoSelectedItemsArray); /// restore selections too
             singers2Remove.clear();
@@ -140,12 +134,18 @@ public class ListLogic implements Interfaces.SingersUpdateProcessor {
    * gets new list of singers, stores it and redraws view
    * @param newList
    */
-  @Override
-  public void updateSingers(List<Singer> newList) {
-    mSingerHelper.resetCommonList(newList);
-    mSingerHelper.mergeLists(); /// merge with local favorite ones
-    mSingerHelper.sort(); /// resort the list just assembled accordingly
-    mAdapter.resetList(mSingerHelper.getCommonList()); /// update view
+  public void listUpdate(List<Singer> newList) {
+    SingerHelper.Lists.resetCommonList(newList);
+    SingerHelper.Lists.mergeLists(); /// merge with local favorite ones
+    SingerHelper.Sorting.sort(); /// resort the list just assembled accordingly
+    mAdapter.resetList(SingerHelper.Lists.getsCommonList()); /// update view
+
+    /// show up suggestion to click
+    Toast toast = Toast.makeText(mContext,
+        mContext.getString(R.string.tstClickSuggestion),
+        Toast.LENGTH_LONG);
+    toast.setGravity(Gravity.CENTER, 0, 0);
+    toast.show();
   }
 
 }

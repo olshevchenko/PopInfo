@@ -1,15 +1,18 @@
 package com.example.ol.popinfo;
 
-import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,52 +20,81 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.widget.ImageView;
 
 import com.example.ol.popinfo.Images.ImagesHelper;
+import com.example.ol.popinfo.Singers.Singer;
 import com.example.ol.popinfo.Singers.SingerHelper;
 import com.example.ol.popinfo.http.YandexClient;
+import com.squareup.picasso.Picasso;
+
+import java.util.List;
 
 /**
  * Created by ol on 27.06.16
  */
-public class MainFragment extends Fragment
-  implements Interfaces.OnSingerItemClickListener,
+public class MainFragment extends Fragment implements
+    Interfaces.OnSingerItemClickListener,
+    Interfaces.OnSingerListUpdateProcessor,
     ActionMode.Callback {
+
+  /// for logging
+  private static final String LOG_TAG = MainFragment.class.getName();
 
   private MainActivity mActivity;
   private Context mContext = null;
 
-  private static Interfaces.SingerDetailViewProcessor mSingerDetailViewProcessor = null;
-  private static Interfaces.SingersRequestInfoProcessor mSingersRequestInfoProcessor = null;
+  private static Interfaces.OnSingerDetailViewProcessor mDetailViewProcessor = null;
+  private static Interfaces.OnSingerListRequestProcessor mListRequestProcessor = null;
 
-  private SingerHelper mSingerHelper = null; /// holder for singer's info
+  private Handler mHandler = null;
   private ListLogic mSingerListLogic; /// engine for singer list processing
   private ImagesHelper mImagesHelper; /// holder for images (cache + async decoder)
 
   /// Yandex client instance & pure interface reference on it
   private YandexClient mHttpClient = null;
 
-  private CoordinatorLayout mCoordinatorLayout;
-  private RecyclerView mRecyclerView;
-  private RecyclerAdapter mAdapter;
-  private RecyclerView.LayoutManager mLayoutManager;
+  private CoordinatorLayout mCoordinatorLayout = null;
+  private CollapsingToolbarLayout mCollapsingToolbar = null;
+  private Toolbar mToolbar = null;
   private ActionMode mCABMode;
 
-  private int mClickedPosition = -1; /// click item storage
+  private RecyclerView mRecyclerView;
+  private RecyclerAdapter mAdapter;
+  private Picasso mPicasso;
 
-  @SuppressWarnings("deprecation")
+  private MyAnimationListener mAnimationListener; /// singer list item animation for onClick()
+
+  /// storage for singer list item onClick() parameters
+  private int mClickedPosition = -1; /// position
+  private boolean mNeedToPerformClick = false;
+
+
   @Override
-  public void onAttach(Activity activity) {
-    super.onAttach(activity);
+  public void onAttach(Context context) {
+    super.onAttach(context);
 
-    mActivity = (MainActivity) activity;
+    mActivity = (MainActivity) context;
 
-    if (null == mContext)
-      /// will always use application's rather than activity's one
-      mContext = mActivity.getApplicationContext();
+    if (null == mContext) {
+      mContext = context;
+      mPicasso = Picasso.with(context);
+    }
 
-    //ToDo ! Check AFTER cfg changing (the parent activity h.b. recreated for EXISTED fragment) !
-    mSingerDetailViewProcessor = mActivity;
+/// ToDo Check AFTER cfg changing (the parent activity h.b. recreated for EXISTED fragment)
+    try {
+      mDetailViewProcessor = (Interfaces.OnSingerDetailViewProcessor) mActivity;
+    }
+    catch (ClassCastException ex) {
+      Log.e(LOG_TAG, "Parent activity " + mActivity.toString() +
+          "MUST implement OnSingerDetailViewProcessor interface => finishing..");
+      throw new ClassCastException(mActivity.toString() +
+          "MUST implement OnSingerDetailViewProcessor");
+    }
+
+    mCoordinatorLayout = mActivity.getCoordinatorLayout();
+    mToolbar = mActivity.getToolbar();
 
     if (null != mHttpClient)
       /// after cfg changes, here we reattach existed MainFragment instance to new MainActivity one
@@ -71,22 +103,28 @@ public class MainFragment extends Fragment
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
-    setHasOptionsMenu(true);
     super.onCreate(savedInstanceState);
+    setHasOptionsMenu(true);
+    setRetainInstance(true);
 
-    mSingerHelper = SingerHelper.getInstance(mContext);
+    mHandler = new Handler();
+
+    SingerHelper.Favors.loadFavoriteSingers(mContext);
 
     mImagesHelper = ImagesHelper.getInstance();
 
-    mAdapter = new RecyclerAdapter(mContext, mImagesHelper, mSingerHelper.getCommonList(), this);
+    mAdapter = new RecyclerAdapter(mContext, mImagesHelper,
+        SingerHelper.Lists.getsCommonList(), this);
+
+    mAnimationListener = new MyAnimationListener();
 
     /// init core logic
-    mSingerListLogic = new ListLogic(mContext, mSingerHelper, mAdapter);
+    mSingerListLogic = new ListLogic(mContext, mAdapter);
 
     /// init & tune Yandex HTTP instance - IF NOT EXISTS ALREADY
     if (null == mHttpClient) {
-      mHttpClient = new YandexClient(mSingerListLogic, mActivity.getSupportFragmentManager());
-      mSingersRequestInfoProcessor = mHttpClient;
+      mHttpClient = new YandexClient(this, mActivity.getSupportFragmentManager());
+      mListRequestProcessor = mHttpClient;
     }
   }
 
@@ -95,14 +133,74 @@ public class MainFragment extends Fragment
                            ViewGroup container,
                            Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.fragment_main, container, false);
+    mNeedToPerformClick = true; /// after cfg change - we need to show later any details (if double-panel mode)
+
+    setMenuVisibility(true);
+    if (null == mCoordinatorLayout)
+      /// not found in activity => find in the fragment
+    mCoordinatorLayout = (CoordinatorLayout) v.findViewById(R.id.coordinatorLayout);
+
+    if (null == mToolbar) {
+      /// not found in activity => find in the fragment
+      mToolbar = (Toolbar) v.findViewById(R.id.toolbar);
+      if (null != mToolbar)
+        mActivity.setSupportActionBar(mToolbar);
+    }
+//    mActivity.getSupportActionBar().invalidateOptionsMenu();
+
+    ImageView im = (ImageView) v.findViewById(R.id.toolbarImage);
+    if (null != im) {
+      mPicasso.load(R.drawable.bar_background)
+          .fit()
+          .into(im);
+    }
+    else {
+      if ( (mActivity.getToolbar() == null) && (null != mToolbar) )
+        /// ordinary (=small) toolbar background IS REALLY defined here, NOT in activity
+        mToolbar.setBackgroundResource(R.drawable.bar_background);
+    }
+
+    mCollapsingToolbar = (CollapsingToolbarLayout) v.findViewById(R.id.collapsingToolbar);
+    if (null != mCollapsingToolbar) {
+      mCollapsingToolbar.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
+      mCollapsingToolbar.setTitle(getResources().getString(R.string.main_fragment_title));
+    }
 
     /// init & tune recycler
     mRecyclerView = (RecyclerView) v.findViewById(R.id.recyclerView);
     mRecyclerView.setHasFixedSize(true);
     mRecyclerView.setAdapter(mAdapter);
 
-    mLayoutManager = new LinearLayoutManager(mContext);
-    mRecyclerView.setLayoutManager(mLayoutManager);
+    if (ScreenConfiguration.getScreenConfigurationState() !=
+        Constants.ScreenConfigurationState.TABLET_LANDSCAPE) {
+      mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+    }
+    else {
+      /// dual-panel mode => click 1'st singer list item
+//      mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+      mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext) {
+        @Override
+        public void onLayoutChildren(final RecyclerView.Recycler recycler, final RecyclerView.State state) {
+          super.onLayoutChildren(recycler, state);
+          int firstVisibleItemPosition = findFirstVisibleItemPosition();
+          if (firstVisibleItemPosition < 0)
+            return;
+          if (! mNeedToPerformClick)
+            return;
+
+          /// it's time => try to execute (delayed) handly item click
+          mHandler.postDelayed(
+              new Runnable() {
+                @Override
+                public void run() {
+                  if (mNeedToPerformClick) {
+                    mAdapter.clickItem(mClickedPosition);
+                  }
+                }
+              },500);
+        }
+      });
+    }
 
     return v;
   }
@@ -115,19 +213,27 @@ public class MainFragment extends Fragment
         (null == mImagesHelper))
       return;
 
-    if (0 == mSingerHelper.getCommonList().size())
+    if (SingerHelper.Lists.getsCommonList().size() == 0) {
       /// load singers automatically only 1'st time
-      mSingersRequestInfoProcessor.singersRequestInfo(mActivity);
-
-    if (mClickedPosition >= 0)
-      /// we are possible back from singer details view => refresh this singer item
-      mAdapter.notifyItemChanged(mClickedPosition);
+      mListRequestProcessor.listRequest(mActivity);
+    }
   }
 
   @Override
-  public void onPause() {
-    super.onPause();
-    mSingerHelper.saveFavoriteSingers(); ///store favorite singers locally
+  public void onDestroyView() {
+    super.onDestroyView();
+  }
+
+  @Override
+  public void onDetach() {
+    super.onDetach();
+    mDetailViewProcessor = null;
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    SingerHelper.Favors.saveFavoriteSingers(); ///store favorite singers locally
   }
 
   @Override
@@ -158,25 +264,23 @@ public class MainFragment extends Fragment
     });
 
     /// update corresponding 'sorting' item state
-    if (null != mSingerHelper) {
-      MenuItem itemNone = menu.findItem(R.id.action_sort_by_none);
-      MenuItem itemByName = menu.findItem(R.id.action_sort_by_name);
-      MenuItem itemByGenres = menu.findItem(R.id.action_sort_by_genres);
-      switch (mSingerHelper.getSortingState()) {
-        case BY_NAME:
-          if (null != itemByName)
-            itemByName.setChecked(true);
-          break;
-        case BY_GENRES:
-          if (null != itemByGenres)
-            itemByGenres.setChecked(true);
-          break;
-        case NOT:
-        default:
-          if (null != itemNone)
-            itemNone.setChecked(true);
-          break;
-      }
+    MenuItem itemNone = menu.findItem(R.id.action_sort_by_none);
+    MenuItem itemByName = menu.findItem(R.id.action_sort_by_name);
+    MenuItem itemByGenres = menu.findItem(R.id.action_sort_by_genres);
+    switch (SingerHelper.Sorting.getsSortingState()) {
+      case BY_NAME:
+        if (null != itemByName)
+          itemByName.setChecked(true);
+        break;
+      case BY_GENRES:
+        if (null != itemByGenres)
+          itemByGenres.setChecked(true);
+        break;
+      case NOT:
+      default:
+        if (null != itemNone)
+          itemNone.setChecked(true);
+        break;
     }
     super.onCreateOptionsMenu(menu, inflater);
   }
@@ -196,8 +300,8 @@ public class MainFragment extends Fragment
 
     switch (id) {
       case R.id.action_reload: //reload singers info from the server
-        if (null != mSingersRequestInfoProcessor)
-          mSingersRequestInfoProcessor.singersRequestInfo(mActivity);
+        if (null != mListRequestProcessor)
+          mListRequestProcessor.listRequest(mActivity);
         return true;
 
       case R.id.action_sort_by_none:
@@ -218,57 +322,32 @@ public class MainFragment extends Fragment
     }
   }
 
-  /**
-   * sets outer layout view for the fragment
-   */
-  public void setCoordinatorLayout(CoordinatorLayout coordinatorLayout) {
-    mCoordinatorLayout = coordinatorLayout;
-  }
 
-  /**
-   * creates new list from search results and shows them up
-   * @param searchQuery - name (mask) of artists to search from main list
-   */
-  public void showFoundSingers(String searchQuery) {
-    mAdapter.resetList(mSingerHelper.makeSearchByName(searchQuery));
-  }
+  class MyAnimationListener implements Animation.AnimationListener {
+    private int mPosition = -1;
+    private View mSingerView = null;
+    private boolean mIsNewClick = true; /// do we animate new click or rollback old one?
 
-  /**
-   * restores original BIG singerList
-   */
-  private void clearFoundSingers() {
-    mSingerHelper.clearSearch();
-    mAdapter.resetList(mSingerHelper.getCommonList());
-  }
-
-
-  @Override
-  public void onClick(int position, View view) {
-    mClickedPosition = position;
-    /// pass click singer event through up for detail show
-    mSingerDetailViewProcessor.singerDetailView(mAdapter.getItem(position));
-  }
-
-  @Override
-  public void onLongClick(int position, View view) {
-    if (null == mSingerHelper)
-      return;
-
-    /// toggle item's selection
-    mAdapter.toggleSelection(position);
-
-    if (null == mCABMode) { /// Start the CAB through the ActionMode.Callback
-      mCABMode = getActivity().startActionMode(MainFragment.this);
+    @Override
+    public void onAnimationStart(Animation animation) {
+      mSingerView.setEnabled(false);
+      if (mIsNewClick)
+        /// pass click singer event through up for detail show
+        mDetailViewProcessor.onDetailView(mPosition);
+      else
+        ; /// no logic here
     }
-    /// eval & show selection counter as a CAB title
-    int selectedNum = mAdapter.getSelectedItemCount();
-    if (0 == selectedNum)
-      mCABMode.finish(); /// just nothing to do..
-    else {
-      String title = getString(R.string.count_cab_selected, mAdapter.getSelectedItemCount());
-      mCABMode.setTitle(title);
-      }
+
+    @Override
+    public void onAnimationEnd(Animation animation) {
+      mSingerView.setEnabled(true);
+    }
+
+    @Override
+    public void onAnimationRepeat(Animation animation) {
+    }
   }
+
 
   @Override
   public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
@@ -296,5 +375,77 @@ public class MainFragment extends Fragment
       default:
         return false;
     }
+  }
+
+  @Override
+  public void onClick(int position) {
+
+    mNeedToPerformClick = false; /// got USER (or emulation) click - no more need to make performance : ))
+
+/// ToDo animate click on the card
+    ;
+/*
+    ///animate forward now!
+    mAnimationListener.setParams(mClickedPosition, mClickedView, true);
+    Animation anim = AnimationUtils.loadAnimation(mActivity, R.anim.singer_item_trans);
+    anim.setAnimationListener(mAnimationListener);
+    view.startAnimation(anim);
+*/
+    mAdapter.toggleClick(mClickedPosition, position); /// process old item's UNclick, new one's click
+    mClickedPosition = position; /// remember new position for further calls
+    mDetailViewProcessor.onDetailView(position); /// pass click singer event through up for detail show
+  }
+
+  @Override
+  public void onLongClick(int position) {
+    /// toggle item's selection
+    mAdapter.toggleSelection(position);
+
+    if (null == mCABMode) { /// Start the CAB through the ActionMode.Callback
+      mCABMode = getActivity().startActionMode(MainFragment.this);
+    }
+    /// eval & show selection counter as a CAB title
+    int selectedNum = mAdapter.getSelectedItemCount();
+    if (0 == selectedNum)
+      mCABMode.finish(); /// just nothing to do..
+    else {
+      String title = getString(R.string.count_cab_selected, mAdapter.getSelectedItemCount());
+      mCABMode.setTitle(title);
+    }
+  }
+
+  @Override
+  public void listUpdate(List<Singer> newList) {
+    mSingerListLogic.listUpdate(newList);
+    mClickedPosition = 0; /// clear stored position for NEW data
+    mNeedToPerformClick = true; /// after data refresh - we need to show any details (if double-panel mode)
+  }
+
+  /**
+   * creates new list from search results and shows them up
+   * @param searchQuery - name (mask) of artists to search from main list
+   */
+  public void showFoundSingers(String searchQuery) {
+    SingerHelper.Searching.makeSearchByName(searchQuery);
+    mAdapter.resetList(SingerHelper.Searching.getSearchedList());
+  }
+
+  /**
+   * restores original BIG singerList
+   */
+  private void clearFoundSingers() {
+    SingerHelper.Searching.clearSearch();
+    mAdapter.resetList(SingerHelper.Lists.getsCommonList());
+  }
+
+  public void changeRating(Singer singer, int newRating) {
+    SingerHelper.Favors.updateFavorite(singer, newRating);
+
+    if (mClickedPosition >= 0) /// use position hold from onClick() processing
+      mAdapter.notifyItemChanged(mClickedPosition);
+  }
+
+  public int getClickedPosition() {
+    return mClickedPosition;
   }
 }

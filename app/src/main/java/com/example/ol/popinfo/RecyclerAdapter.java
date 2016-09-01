@@ -1,7 +1,9 @@
 package com.example.ol.popinfo;
 
 import android.content.Context;
+import android.os.Build;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -25,8 +27,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
   private static final String LOG_TAG = RecyclerAdapter.class.getName();
 
   private final Context mContext;
+  private RecyclerView mRecyclerView = null;
   private static ImagesHelper mImagesHelper;
+
   private static Interfaces.OnSingerItemClickListener mClickListener;
+  private int mClickedPosition = -1;
 
   private List<Singer> mSingers; /// current list
   private SparseBooleanArray mSelectedItems = new SparseBooleanArray();
@@ -44,8 +49,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
     TextView mSingerGenres;
     TextView mSingerAlbums;
     TextView mSingerTracks;
-    ImageView mSingerFavorite;
     ImageView mSelector;
+    ImageView mClicker;
+    ImageView mSingerFavorite;
 
     SingerViewHolder(View itemView) {
       super(itemView);
@@ -57,20 +63,41 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
       mSingerGenres = (TextView)itemView.findViewById(R.id.tvSingerGenres);
       mSingerAlbums = (TextView)itemView.findViewById(R.id.tvSingerAlbums);
       mSingerTracks = (TextView)itemView.findViewById(R.id.tvSingerTracks);
-      mSingerFavorite = (ImageView)itemView.findViewById(R.id.ivFavorite);
       mSelector = (ImageView)itemView.findViewById(R.id.ivSelector);
+      mClicker = (ImageView)itemView.findViewById(R.id.ivClicker);
+      mSingerFavorite = (ImageView)itemView.findViewById(R.id.ivFavorite);
     }
 
     /**
      * binds singer item to the holder
-     * adds 2 listener (click for moving to singer's detail view, long click for items selection)
-     * @param singerItem
+     * elevates | colorizes | makes parts visible depending on item state
+     * @param singerItem list item
      * @param isSelected whether the item was selected already or not yet
+     * @param isClicked sign of the item has been clicked
+     * @param isDualPanelMode sign of TABLET_LANDSCAPE screen configuration
      */
-    public void bind(final Singer singerItem, boolean isSelected) {
-      /// 1'st, highlight the item accordingly
-      mCV.setCardBackgroundColor(isSelected? sCardSelectColor : sCardDefColor);
-      mSelector.setVisibility(isSelected? View.VISIBLE : View.GONE);
+    public void bind(final Singer singerItem,
+                     boolean isSelected,
+                     boolean isClicked,
+                     boolean isDualPanelMode) {
+
+      /// 1'st, elevate the item accordingly to his state (if poss, otherwise just show arrow)
+      if (isClicked && isDualPanelMode) {
+          mClicker.setVisibility(View.VISIBLE);
+      }
+      else {
+          mClicker.setVisibility(View.GONE);
+      }
+
+      /// 2'nd, set the item color & switch visibility for selector
+      if ( isSelected ) {
+        mCV.setCardBackgroundColor(sCardSelectColor);
+        mSelector.setVisibility(View.VISIBLE);
+      }
+      else {
+        mCV.setCardBackgroundColor(sCardDefColor);
+        mSelector.setVisibility(View.GONE);
+      }
 
       /// then, draw the item's content
       Singer.Header header = singerItem.getHeader();
@@ -88,13 +115,13 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
     @Override
     public void onClick(View view) {
       if (null != mClickListener)
-        mClickListener.onClick(getAdapterPosition(), view);
+        mClickListener.onClick(getAdapterPosition());
     }
 
     @Override
     public boolean onLongClick(View view) {
       if (null != mClickListener)
-        mClickListener.onLongClick(getAdapterPosition(), view);
+        mClickListener.onLongClick(getAdapterPosition());
       return true;
     }
 
@@ -143,7 +170,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
   @Override
   public void onBindViewHolder(SingerViewHolder holder, int position) {
     Log.d(LOG_TAG, "holder.bind(pos:" + position + ", singer:" + mSingers.get(position) +")");
-    holder.bind(mSingers.get(position), mSelectedItems.get(position, false));
+    holder.bind(mSingers.get(position),
+        mSelectedItems.get(position, false),
+        position == mClickedPosition,
+        ScreenConfiguration.getScreenConfigurationState()==
+            Constants.ScreenConfigurationState.TABLET_LANDSCAPE);
   }
 
   public Singer getItem(int position) {
@@ -155,6 +186,30 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
     return mSingers.size();
   }
 
+  @Override
+  public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+    super.onAttachedToRecyclerView(recyclerView);
+    mRecyclerView = recyclerView;
+  }
+
+  @Override
+  public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+    super.onDetachedFromRecyclerView(recyclerView);
+    mRecyclerView = null;
+  }
+
+  /**
+   * Emulates item click by customer
+   */
+  public void clickItem(int position) {
+    if (null == mRecyclerView)
+      return;
+    SingerViewHolder holder = (SingerViewHolder) mRecyclerView.findViewHolderForAdapterPosition(position);
+    if (null == holder)
+      return;
+    holder.itemView.performClick();
+  }
+
 
   /**
    * Deletes selected item & notifies view.
@@ -164,9 +219,21 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.Singer
     notifyItemRemoved(pos);
   }
 
-/**
- * multiple selection operations
- */
+  /**
+   * single item click processing
+   */
+  public void toggleClick(int oldPos, int newPos) {
+    mClickedPosition = newPos; /// store here for correct drawing in onBindViewHolder()
+    if (oldPos >= 0)
+      /// remove 'click' transformation from old item (if there was one)
+      notifyItemChanged(oldPos);
+
+    notifyItemChanged(mClickedPosition);
+  }
+
+  /**
+   * multiple item selection processing
+   */
   public void toggleSelection(int pos) {
     if (mSelectedItems.get(pos, false)) {
       mSelectedItems.delete(pos);

@@ -2,7 +2,7 @@
 
     <!-- Titles, main menu -->
     <string name="app_name">PopInfo</string>
-    <string name="main_activity_title">Artist list</string>
+    <string name="main_fragment_title">Artist list</string>
     <string name="details_activity_title">Details</string>
 
     <string name="action_reload">Reload list</string>
@@ -29,6 +29,8 @@
         Unable to get singers information. Check your network connection.</string>
 
     <!-- Singers list -->
+    <string name="tstClickSuggestion">Click for details\n
+        Long click for selection..</string>
     <string name="tvSingersListHeader">Singers</string>
     <string name="tvArtistsListEmpty">Sorry, there are No singers..</string>
     <string name="dlgGettingSingersList">Updating singers list...</string>
@@ -44,6 +46,21 @@
     <string name="tvDetailFavoriteTitle">Favorite:</string>
     <string name="tvDetailDescriptionTitle">Description:</string>
     <string name="tvDetailDescriptionText">DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
+    DescriptionTextDescriptionTextDescriptionText\n
     DescriptionTextDescriptionTextDescriptionText\n
     DescriptionTextDescriptionTextDescriptionText
     </string>

@@ -26,7 +26,7 @@ import com.example.ol.popinfo.http.dto.SingerDto;
  * class for Retrofit operation with Yandex HTTP server
  * requests for singers list
  */
-public class YandexClient implements Interfaces.SingersRequestInfoProcessor {
+public class YandexClient implements Interfaces.OnSingerListRequestProcessor {
   //for logging
   private static final String LOG_TAG = YandexClient.class.getName();
 
@@ -34,12 +34,12 @@ public class YandexClient implements Interfaces.SingersRequestInfoProcessor {
   private YandexApi.Api mApi;
 
   /// singers update processor interface
-  private Interfaces.SingersUpdateProcessor mSingersUpdateProcessor = null;
+  private Interfaces.OnSingerListUpdateProcessor mListUpdateProcessor = null;
 
-  public YandexClient(Interfaces.SingersUpdateProcessor singersUpdateProcessor,
+  public YandexClient(Interfaces.OnSingerListUpdateProcessor listUpdateProcessor,
                       FragmentManager fm) {
     mFM = fm;
-    mSingersUpdateProcessor = singersUpdateProcessor;
+    mListUpdateProcessor = listUpdateProcessor;
     mApi = YandexApi.getApi();
   }
 
@@ -48,7 +48,7 @@ public class YandexClient implements Interfaces.SingersRequestInfoProcessor {
   }
 
   @Override
-  public void singersRequestInfo(Context context) {
+  public void listRequest(Context context) {
 
     final ProgressDialog dialog = ProgressDialog.show(context, "",
         context.getString(R.string.dlgGettingSingersList), false, false);
@@ -70,8 +70,8 @@ public class YandexClient implements Interfaces.SingersRequestInfoProcessor {
           }
           Log.d(LOG_TAG, "Got new [" + singerList.size() + "] singers");
 
-          if (null != mSingersUpdateProcessor)
-            mSingersUpdateProcessor.updateSingers(singerList);
+          if (null != mListUpdateProcessor)
+            mListUpdateProcessor.listUpdate(singerList);
 
         } else {
           /// response received but request not successful (4xx client HTTP error)

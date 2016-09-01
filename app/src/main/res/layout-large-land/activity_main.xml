@@ -23,32 +23,24 @@
         </android.support.v7.widget.Toolbar>
     </android.support.design.widget.AppBarLayout>
 
-    <RelativeLayout
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <!-- just half-size devider -->
-        <View
-            android:id="@+id/strut"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_centerHorizontal="true"/>
-        <fragment
-            android:id="@+id/fragment_main"
-            class="com.example.ol.popinfo.MainFragment"
-            android:layout_toStartOf="@id/strut"
-            android:layout_alignParentTop="true"
-            android:layout_width="match_parent"
+        <FrameLayout
+            android:id="@+id/fragment_container"
             android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="2"
             tools:layout="@layout/fragment_main">
-        </fragment>
+        </FrameLayout>
         <FrameLayout
             android:id="@+id/fragment_detail_container"
-            android:layout_toEndOf="@id/strut"
-            android:layout_alignParentTop="true"
-            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:name="com.example.ol.popinfo.DetailsFragment">
+            android:layout_width="0dp"
+            android:layout_weight="3"
+            tools:layout="@layout/fragment_details">
         </FrameLayout>
-    </RelativeLayout>
+    </LinearLayout>
 </android.support.design.widget.CoordinatorLayout>

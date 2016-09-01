@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <integer name="rating_stars_num">5</integer>
+
+    <integer name="singer_moveanim_duration">500</integer>
+
     <integer name="singer_cardview_elevation">6</integer>
 
     <integer name="cfg_phone_portrait">0</integer>

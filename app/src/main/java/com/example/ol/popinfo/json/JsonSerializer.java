@@ -70,11 +70,10 @@ public class JsonSerializer {
       JSONArray array = (JSONArray) new JSONTokener(jsonString.toString()).nextValue();
 
       /// Build the array of Singers from JSONObjects
+
       for (int i = 0; i < array.length(); i++) {
         Singers.add(new Singer(array.getJSONObject(i)));
       }
-    } catch (FileNotFoundException e) {
-    /// Ignore this one; it happens when starting fresh
     } finally {
       if (reader != null)
         reader.close();

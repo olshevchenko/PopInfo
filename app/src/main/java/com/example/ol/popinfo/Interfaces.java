@@ -14,32 +14,40 @@ import java.util.List;
 public class Interfaces {
 
   /**
-   * interface to complete response of singers information update
+   * interface to process request for whole singer list information update
    */
-  public interface SingersUpdateProcessor {
-    void updateSingers(List<Singer> newList);
+  public interface OnSingerListRequestProcessor {
+    void listRequest(Context context);
   }
 
   /**
-   * interface to process request for singers information update
+   * interface to process response from whole singer list information update
    */
-  public interface SingersRequestInfoProcessor {
-    void singersRequestInfo(Context context);
+  public interface OnSingerListUpdateProcessor {
+    void listUpdate(List<Singer> newList);
   }
 
+
   /**
-   * interface to process events on separated singer item
+   * interface to process events on separated singer item (in RecyclerView)
    */
   public interface OnSingerItemClickListener {
-    void onClick(int position, View view); /// for starting detail view
-    void onLongClick(int position, View view); /// for (multiple) selection
+    void onClick(int position); /// for starting detail view
+    void onLongClick(int position); /// for (multiple) selection
   }
 
   /**
-   * interface to process detailed view of requested Singer
+   * interface to process detailed view of singer pointed (list=>details)
    */
-  public interface SingerDetailViewProcessor {
-    void singerDetailView(Singer singerDetailed);
+  public interface OnSingerDetailViewProcessor {
+    void onDetailView(int position);
+  }
+
+  /**
+   * interface to process rating (favorite) change event on singer (list<=details)
+   */
+  public interface OnSingerRatingChangeListener {
+    void onRatingChange(Singer singer, int newRating);
   }
 }
 
