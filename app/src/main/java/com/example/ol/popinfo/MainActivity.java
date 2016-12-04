@@ -111,6 +111,10 @@ public class MainActivity extends AppCompatActivity implements
     }
   }
 
+  /**
+   * processes click on singers list item at <position>
+   * @param position
+   */
   @Override
   public void onDetailView(int position) {
     if (ScreenConfiguration.getScreenConfigurationState() ==
